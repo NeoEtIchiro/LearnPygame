@@ -5,7 +5,7 @@
 print(" 1. Variables et types de données")
 # ------------------------------------------------------------
 
-# Les nombres entiers (int) erty
+# Les nombres entiers (int)
 x = 10
 
 # Les nombres à virgule (float)

@@ -1,61 +1,60 @@
-import socket
-import threading
+import asyncio
+import websockets
 
-HOST = '0.0.0.0'  # écoute sur toutes les interfaces réseau
-PORT = 12345
+# Ensemble pour stocker les clients connectés
+# Utilisé pour éviter les doublons et gérer les connexions/déconnexions
+clients = set()
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind((HOST, PORT))
-server.listen()
+# Fonction pour gérer l'enregistrement des clients
+async def register(websocket):
+    clients.add(websocket)
 
-clients = []      # liste des connexions clients
-nicknames = []    # liste des pseudos associés
+# Fonction pour gérer le désenregistrement des clients
+async def unregister(websocket):
+    clients.remove(websocket)
 
-def broadcast(message, _client):
-    """Diffuser le message à tous les clients sauf l'émetteur"""
-    for client in clients:
-        if client != _client:
-            try: 
-                client.send(message)
-            except:
-                remove_client(client)
+# Fonction pour diffuser un message à tous les clients connectés
+# Envoie le message à tous les clients sauf celui qui l'a envoyé
+async def broadcast(message, sender=None):
+    # Parcours de tous les clients connectés
+    for client in clients.copy():
+        # Exclure le client qui envoie le message
+        if client != sender:
+            try:
+                # Envoi du message au client
+                await client.send(message)
+            except websockets.exceptions.ConnectionClosed:
+                # Si la connexion est fermée, on le retire de l'ensemble des clients
+                clients.remove(client)
 
-def handle(client):
-    """Gestion de la réception des messages d'un client"""
-    while True:
-        try:
-            msg = client.recv(1024)
-            if msg:
-                print("Message reçu: " + msg.decode('utf-8'))
-                broadcast(msg, client)
-            else:
-                remove_client(client)
-                break
-        except:
-            remove_client(client)
-            break
+# Fonction principale qui gère la connexion des clients
+async def handler(websocket, path=None):
+    # Enregistrement du client
+    await register(websocket)
+    try:
+        # Le client envoie son pseudo dès la connexion
+        nickname = await websocket.recv()
+        await broadcast(f"{nickname} a rejoint le chat!")
+        # Boucle de réception des messages du client
+        async for message in websocket:
+            print("Message reçu: " + message)
+            await broadcast(message, sender=websocket)
+    except websockets.exceptions.ConnectionClosed:
+        pass
+    finally:
+        # Désenregistrement et annonce de déconnexion
+        await unregister(websocket)
+        await broadcast(f"{nickname} a quitté le chat!")
 
-def remove_client(client):
-    """Supprime le client de la liste en cas de déconnexion"""
-    if client in clients:
-        index = clients.index(client)
-        clients.remove(client)
-        nicknames.pop(index)
+async def main():
+    # Démarre le serveur WebSocket sur le port 80
+    async with websockets.serve(handler, "0.0.0.0", 80):
+        print("Serveur WebSocket lancé sur le port 80")
+        
+        # Exécute le serveur indéfiniment
+        # Utilise asyncio.Future() pour garder le serveur actif
+        # sans bloquer le thread principal
+        await asyncio.Future()
 
-def receive():
-    """Accepte les connexions entrantes et démarre le thread de gestion pour chaque client"""
-    print("Le serveur est en écoute...")
-    while True:
-        client, address = server.accept()
-        print("Connecté à: " + str(address))
-        client.send("NICK".encode('utf-8'))
-        nickname = client.recv(1024).decode('utf-8')
-        nicknames.append(nickname)
-        clients.append(client)
-        print("Le pseudo du client est: " + nickname)
-        broadcast((nickname + " a rejoint le chat!").encode('utf-8'), client)
-        thread = threading.Thread(target=handle, args=(client,))
-        thread.start()
 
-print("Le serveur est démarré...")
-receive()
+asyncio.run(main())

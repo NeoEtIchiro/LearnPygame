@@ -1,37 +1,39 @@
-import socket
-import threading
+import asyncio
+import websockets
 
-HOST = '127.0.0.1'  # Remplacer par l'adresse IP du serveur si nécessaire
-PORT = 12345
+# Exécute une fonction de manière asynchrone pour obtenir une entrée utilisateur
+async def ainput(prompt: str = "") -> str:
+    return await asyncio.get_event_loop().run_in_executor(None, input, prompt)
 
-nickname = input("Choisis ton pseudo: ")
+# Fonction principale du client de chat
+async def chat_client():
+    # Remplacez par l'URL fournie par ngrok pour le tunnel HTTP.
+    # Par exemple, pour une URL sécurisée, utilisez wss://...
+    uri = "wss://innocent-lemming-moderately.ngrok-free.app"
+    nickname = await ainput("Entrez votre pseudo: ")
+    
+    # Connexion au serveur WebSocket
+    async with websockets.connect(uri) as websocket:
+        # Envoie du pseudo dès la connexion
+        await websocket.send(nickname)
+        
+        # Fonction pour recevoir les messages du serveur
+        async def receiver():
+            while True:
+                try:
+                    message = await websocket.recv()
+                    print(message)
+                except websockets.exceptions.ConnectionClosed:
+                    print("La connexion a été fermée.")
+                    break
 
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect((HOST, PORT))
+        # Fonction pour envoyer des messages au serveur
+        async def sender():
+            while True:
+                message = await ainput("")
+                await websocket.send(f"{nickname}: {message}")
 
-def receive():
-    """Thread de réception des messages du serveur"""
-    while True:
-        try:
-            message = client.recv(1024).decode('utf-8')
-            if message == 'NICK':
-                client.send(nickname.encode('utf-8'))
-            else:
-                print(message)
-        except:
-            print("Une erreur est survenue!")
-            client.close()
-            break
+        # Exécute les tâches d'envoi et de réception en parallèle
+        await asyncio.gather(receiver(), sender())
 
-def write():
-    """Thread d'envoi des messages saisis par l'utilisateur"""
-    while True:
-        message = "{}: {}".format(nickname, input(''))
-        client.send(message.encode('utf-8'))
-
-# Démarrage des threads de réception et d'envoi
-receive_thread = threading.Thread(target=receive)
-receive_thread.start()
-
-write_thread = threading.Thread(target=write)
-write_thread.start()
+asyncio.run(chat_client())
