@@ -42,9 +42,20 @@ for s in scores_tries:
 
 # Exercice 7 : Supprimer un joueur
 nom_supprimer = "Bob"
-scores = [s for s in scores if s["nom"] != nom_supprimer]
+
+nouveaux_scores = []
+
+# On parcourt chaque score dans la liste existante
+for score in scores:
+    # Si le nom du score est différent de celui à supprimer
+    if score["nom"] != nom_supprimer:
+        # On ajoute ce score à la nouvelle liste
+        nouveaux_scores.append(score)
+
+# On remplace l'ancienne liste par la nouvelle, sans le score supprimé
+scores = nouveaux_scores
 with open("scores.json", "w", encoding="utf-8") as f:
-    json.dump(scores, f, indent=4)
+    json.dump(nouveaux_scores, f, indent=4)
 
 # Exercice 8 : Modifier un score
 nom_modifier = "Alice"

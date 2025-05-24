@@ -19,64 +19,70 @@ Il est lisible par l'homme et facile à manipuler en Python grâce au module `js
 
 import json
 
-# Exemple de données à sauvegarder
-utilisateur = {
-    "nom": "Alice",
-    "age": 25,
-    "langages": ["Python", "JavaScript"]
-}
+# # Exemple de données à sauvegarder
+# utilisateur = {
+#     "nom": "Alice",
+#     "age": 25,
+#     "langages": [{"langage": "Python", "niveau": "intermédiaire"},
+#                  {"langage": "JavaScript", "niveau": "débutant"}],
+# }
 
-# Sauvegarde dans un fichier
-with open("utilisateur.json", "w", encoding="utf-8") as f:
-    json.dump(utilisateur, f, indent=4)
-print("Données sauvegardées dans utilisateur.json")
+# # Sauvegarde dans un fichier
+# with open("utilisateur.json", "w", encoding="utf-8") as json_file: # w pour write
+#   json.dump(utilisateur, json_file, indent=4)
+    
+    
+# print("Données sauvegardées dans utilisateur.json")
 
-"""
-Étape 3 : Lire des données depuis un fichier JSON
--------------------------------------------------
-"""
 
-with open("utilisateur.json", "r", encoding="utf-8") as f:
-    donnees = json.load(f)
-print("Données lues :", donnees)
+# """
+# Étape 3 : Lire des données depuis un fichier JSON
+# -------------------------------------------------
+# """
 
-"""
-Étape 4 : Sauvegarder une liste de dictionnaires
-------------------------------------------------
-"""
+# with open("utilisateur.json", "r", encoding="utf-8") as json_file: # r pour read
+#     donnees = json.load(json_file)
+    
+# print("Données lues :", donnees)
 
-utilisateurs = [
-    {"nom": "Alice", "age": 25},
-    {"nom": "Bob", "age": 30},
-    {"nom": "Charlie", "age": 22}
-]
+# """
+# Étape 4 : Sauvegarder une liste de dictionnaires
+# ------------------------------------------------
+# """
 
-with open("utilisateurs.json", "w", encoding="utf-8") as f:
-    json.dump(utilisateurs, f, indent=4)
-print("Liste d'utilisateurs sauvegardée.")
+# utilisateurs = [
+#     {"nom": "Alice", "age": 25},
+#     {"nom": "Bob", "age": 30},
+#     {"nom": "Charlie", "age": 22}
+# ]
 
-"""
-Étape 5 : Lire une liste de dictionnaires
------------------------------------------
-"""
+# with open("utilisateurs.json", "w", encoding="utf-8") as f:
+#     json.dump(utilisateurs, f, indent=4)
+    
+# print("Liste d'utilisateurs sauvegardée.")
 
-with open("utilisateurs.json", "r", encoding="utf-8") as f:
-    liste = json.load(f)
-for u in liste:
-    print(f"{u['nom']} a {u['age']} ans.")
+# """
+# Étape 5 : Lire une liste de dictionnaires
+# -----------------------------------------
+# """
 
-"""
-Étape 6 : Gérer les erreurs lors de la lecture
-----------------------------------------------
-"""
+# with open("utilisateurs.json", "r", encoding="utf-8") as f:
+#     liste = json.load(f)
+# for user in liste:
+#     print(f"{user['nom']} a {user['age']} ans.")
 
-try:
-    with open("fichier_inexistant.json", "r", encoding="utf-8") as f:
-        data = json.load(f)
-except FileNotFoundError:
-    print("Erreur : le fichier n'existe pas.")
-except json.JSONDecodeError:
-    print("Erreur : le fichier n'est pas un JSON valide.")
+# """
+# Étape 6 : Gérer les erreurs lors de la lecture
+# ----------------------------------------------
+# """
+
+# try:
+#     with open("utilisateur.json", "r", encoding="utf-8") as f:
+#         data = json.load(f)
+# except FileNotFoundError:
+#     print("Erreur : le fichier n'existe pas.")
+# except json.JSONDecodeError:
+#     print("Erreur : le fichier n'est pas un JSON valide.")
 
 """
 Étape 7 : Sérialiser des objets non standards
