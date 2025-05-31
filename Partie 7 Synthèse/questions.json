@@ -1,0 +1,17 @@
+[
+  {
+    "question": "Quelle est la capitale de la France ?",
+    "choices": ["Paris", "Londres", "Berlin", "Madrid"],
+    "answer": 0
+  },
+  {
+    "question": "Combien font 2 + 2 ?",
+    "choices": ["3", "4", "5", "6"],
+    "answer": 1
+  },
+  {
+    "question": "Quel langage utilise Pygame ?",
+    "choices": ["Java", "Python", "C++", "Ruby"],
+    "answer": 1
+  }
+]
