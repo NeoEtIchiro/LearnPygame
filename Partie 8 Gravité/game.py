@@ -8,14 +8,14 @@ class Game:
     def __init__(self):
         # Initialise Pygame et crée la fenêtre du jeu
         pygame.init()
-        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))  # Fenêtre principale
+        self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)  # Fenêtre principale
         self.clock = pygame.time.Clock()                        # Pour gérer le temps et le FPS
 
         # Création des plateformes du niveau (liste d'objets Platform)
         self.platforms = [
-            Platform(0, HEIGHT - 40, WIDTH, 40),      # Sol
+            Platform(0, HEIGHT - 40, WIDTH * 100, 40),      # Sol
             Platform(200, 450, 200, 20),              # Plateforme 1
-            Platform(500, 350, 200, 20),              # Plateforme 2
+            Platform(500, 350, 200, 20, type="glace"),              # Plateforme 2
             Platform(300, 250, 100, 20)               # Plateforme 3
         ]
         # Création du joueur (objet Player)
@@ -41,6 +41,11 @@ class Game:
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 # Si une touche est pressée
+                if event.key == pygame.K_ESCAPE:
+                    # Si la touche Échap est pressée, on quitte le jeu
+                    self.running = False
+                    pygame.quit()
+                    sys.exit()
                 if event.key == pygame.K_SPACE:
                     self.player.jump()  # Le joueur tente de sauter
 
