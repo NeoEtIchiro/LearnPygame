@@ -12,7 +12,7 @@ class QuizUI:
         self.username = self.ask_username()
         pygame.init()
         self.quiz = quiz
-        self.screen = pygame.display.set_mode((600, 400))  # Crée la fenêtre du jeu
+        self.screen = pygame.display.set_mode((600, 400))   # Crée la fenêtre du jeu
         pygame.display.set_caption("Quiz Game")             # Titre de la fenêtre
         self.font = pygame.font.SysFont(None, 28)           # Police pour le texte
         self.clock = pygame.time.Clock()                    # Pour gérer le temps/rafraîchissement
@@ -26,7 +26,7 @@ class QuizUI:
     def ask_username(self):
         # Demande le nom de l'utilisateur dans le terminal
         username = input("Entrez votre nom d'utilisateur : ")
-        return username.strip() if username.strip() else "Joueur"
+        return username if username else "Joueur"
 
     def load_best_score(self):
         # Charge le meilleur score de l'utilisateur depuis le fichier USERS_FILE
@@ -35,10 +35,10 @@ class QuizUI:
                 with open(USERS_FILE, "r", encoding="utf-8") as f:
                     users = json.load(f)
                 # Retourne le meilleur score de l'utilisateur si existant
-                return max(users.get(self.username, [])) if self.username in users and users[self.username] else 0
+                return max(users.get(self.username, [])) if self.username in users and users[self.username] else -1
             except Exception:
-                return 0
-        return 0
+                return -1
+        return -1
 
     def save_score(self, score):
         # Sauvegarde le score de l'utilisateur dans USERS_FILE
@@ -83,6 +83,7 @@ class QuizUI:
                 pass
 
     def delete_progress(self):
+        print("Suppression de la sauvegarde...")
         # Supprime la sauvegarde après la fin du quiz
         if os.path.exists(SAVE_FILE):
             os.remove(SAVE_FILE)
