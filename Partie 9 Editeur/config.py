@@ -14,4 +14,5 @@ WIDTH = GRID_SIZE * CELL_SIZE
 HEIGHT = GRID_SIZE * CELL_SIZE + 60  # espace pour les boutons
 
 # Chemin du fichier de sauvegarde (dans le même dossier que ce script)
-SAVE_FILE = os.path.join(os.path.dirname(__file__), "level.json")
+dossier_courant = os.path.dirname(os.path.abspath(__file__))
+SAVE_FILE = os.path.join(dossier_courant, "level.json")
