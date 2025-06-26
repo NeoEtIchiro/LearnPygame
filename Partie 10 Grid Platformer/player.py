@@ -9,6 +9,8 @@ class Player:
         self.vel_x = 0           # Vitesse horizontale du joueur (pour les déplacements)
         self.on_ground = False   # Indique si le joueur touche une plateforme ou le sol
         self.slowing_speed = 2
+        self.jump_multiplier = 1  # Multiplieur de saut, utilisé pour les plateformes spéciales
+        self.speed_multiplier = 1  # Multiplieur de vitesse, utilisé pour les plateformes spéciales
 
     def handle_input(self, keys):
         # Gestion des déplacements horizontaux avec les touches fléchées
@@ -33,17 +35,17 @@ class Player:
                 self.vel_x = 0
             
         # Limite la vitesse horizontale pour éviter de dépasser une certaine valeur
-        if self.vel_x > PLAYER_MAX_SPEED:
-            self.vel_x = PLAYER_MAX_SPEED
-        elif self.vel_x < -PLAYER_MAX_SPEED:
-            self.vel_x = -PLAYER_MAX_SPEED
+        if self.vel_x > PLAYER_MAX_SPEED * self.speed_multiplier:
+            self.vel_x = PLAYER_MAX_SPEED * self.speed_multiplier  # Applique le multiplicateur de vitesse
+        elif self.vel_x < -PLAYER_MAX_SPEED * self.speed_multiplier:
+            self.vel_x = -PLAYER_MAX_SPEED * self.speed_multiplier  # Applique le multiplicateur de vitesse
             
         self.rect.x += int(self.vel_x)  # Applique le déplacement horizontal au rectangle du joueur
 
     def jump(self):
         # Permet au joueur de sauter uniquement s'il est sur le sol
         if self.on_ground:
-            self.vel_y = JUMP_STRENGTH  # Applique une vitesse verticale négative (vers le haut)
+            self.vel_y = JUMP_STRENGTH * self.jump_multiplier  # Applique une vitesse verticale négative (vers le haut)
 
     def apply_gravity(self):
         # Applique la gravité à la vitesse verticale du joueur
@@ -65,10 +67,10 @@ class Player:
                 self.on_ground = True            # Le joueur est maintenant sur le sol
                 
                 # Si c'est un bloc rebond, le joueur rebondit automatiquement
-                if plat.type == "rebond":
-                    self.vel_y = JUMP_STRENGTH * 1.2  # Rebond plus fort que le saut normal
-                
-                self.slowing_speed = plat.slowing_speed
+                self.jump_multiplier = plat.properties.get('jump_multiplier', 1)
+                self.slowing_speed = plat.properties.get('slowing_speed', 1)
+                self.speed_multiplier = plat.properties.get('speed_multiplier', 1)
+                print(f"Collision avec la plateforme: {plat.properties}")
                 
         if(not self.on_ground):
             self.slowing_speed = 0.3
@@ -79,6 +81,16 @@ class Player:
         self.apply_gravity()              # Applique la gravité
         self.check_collision(platforms)   # Vérifie les collisions avec les plateformes
 
-    def draw(self, surface):
-        # Dessine le joueur en rouge sur la surface donnée
-        pygame.draw.rect(surface, (255, 0, 0), self.rect)
+    def draw(self, surface, camera_offset=None):
+        if camera_offset:
+            # Dessine le joueur avec l'offset de la caméra
+            rect = pygame.Rect(
+                self.rect.x - camera_offset[0],
+                self.rect.y - camera_offset[1],
+                self.rect.width,
+                self.rect.height
+            )
+            pygame.draw.rect(surface, (255, 0, 0), rect)
+        else:
+            # Dessine normalement si pas d'offset de caméra
+            pygame.draw.rect(surface, (255, 0, 0), self.rect)
