@@ -24,20 +24,22 @@ def bresenham_line(x0, y0, x1, y1):
     Utile pour dessiner en glissant la souris rapidement.
     """
     points = []
-    dx = abs(x1 - x0)
-    dy = abs(y1 - y0)
-    sx = 1 if x0 < x1 else -1
-    sy = 1 if y0 < y1 else -1
-    err = dx - dy
+    delta_x = abs(x1 - x0)
+    delta_y = abs(y1 - y0)
+    step_x = 1 if x0 < x1 else -1
+    step_y = 1 if y0 < y1 else -1
+    error = delta_x - delta_y
     while True:
         points.append((y0, x0))
         if x0 == x1 and y0 == y1:
             break
-        e2 = 2 * err
-        if e2 > -dy:
-            err -= dy; x0 += sx
-        if e2 < dx:
-            err += dx; y0 += sy
+        error2 = 2 * error
+        if error2 > -delta_y:
+            error -= delta_y
+            x0 += step_x
+        if error2 < delta_x:
+            error += delta_x
+            y0 += step_y
     return points
 
 def game_loop():
@@ -60,7 +62,6 @@ def game_loop():
     # Variables pour le dessin en glissé
     drawing = False      # True si on est en train de dessiner avec la souris
     draw_value = None    # Valeur à dessiner (1 = vivant, 0 = mort)
-    changed = set()      # Cellules déjà modifiées pendant le glissé
     last_cell = None     # Dernière cellule modifiée (pour tracer une ligne)
 
     # Préparer la police et les boutons
@@ -75,8 +76,6 @@ def game_loop():
         buttons[name] = Button(rect, name, font)
 
     while True:
-        time_delta = clock.tick(60)/1000.0  # Limite à 60 FPS
-
         # --- Gestion des événements clavier/souris ---
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -86,7 +85,6 @@ def game_loop():
             # Relâchement du bouton souris : on arrête de dessiner
             elif event.type == pygame.MOUSEBUTTONUP:
                 drawing = False
-                changed.clear()
                 last_cell = None
 
             # Gestion des touches clavier
@@ -107,17 +105,22 @@ def game_loop():
             elif event.type == pygame.MOUSEWHEEL:
                 # On veut zoomer autour du centre de l'écran
                 old_size = cell_size
+                
                 center_x = WIDTH / 2
                 center_y = HEIGHT / 2
+                
                 # Coordonnées du centre dans le "monde" (grille)
+                
                 world_cx = (cam.x + center_x) / old_size
                 world_cy = (cam.y + center_y) / old_size
+                
                 # Ajuster la taille des cellules
                 if event.y > 0:
-                    cell_size = min(cell_size + 2, 100)
+                    cell_size = min(cell_size + 2, 200)
                 elif event.y < 0:
                     min_size = max(WIDTH // COLS, HEIGHT // ROWS)
                     cell_size = max(cell_size - 2, min_size)
+                    
                 cam.cell_size = cell_size  # Mettre à jour la caméra
                 # Recentrer la caméra pour garder le même centre
                 cam.x = world_cx * cell_size - center_x
@@ -133,9 +136,10 @@ def game_loop():
                     # Clic sur la grille : début du dessin
                     col = int((x + cam.x) // cell_size)
                     row = int((y + cam.y) // cell_size)
+                    
                     if 0 <= row < ROWS and 0 <= col < COLS:
                         drawing = True
-                        changed = {(row, col)}
+                        
                         # On choisit la couleur selon la cellule cliquée
                         draw_value = 1 if grid_obj.cells[row][col] == 0 else 0
                         grid_obj.toggle(row, col, draw_value)
@@ -157,14 +161,15 @@ def game_loop():
             if my < HEIGHT:
                 c = int((mx + cam.x) // cell_size)
                 r = int((my + cam.y) // cell_size)
+                
                 if 0 <= r < ROWS and 0 <= c < COLS:
                     # Tracer une ligne entre la dernière cellule et la nouvelle
                     if last_cell is not None:
                         r0, c0 = last_cell
                         for rr, cc in bresenham_line(c0, r0, c, r):
-                            if (rr, cc) not in changed:
-                                grid_obj.toggle(rr, cc, draw_value)
-                                changed.add((rr, cc))
+                            grid_obj.toggle(rr, cc, draw_value)
+                            last_cell = (rr, cc)
+                    
                     # Mettre à jour la dernière cellule
                     last_cell = (r, c)
 
